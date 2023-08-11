@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import uz.pdp.userservice.domain.dto.LoginDTO;
+import uz.pdp.userservice.domain.dto.PasswordUpdateDTO;
 import uz.pdp.userservice.domain.dto.ResetPasswordDTO;
 import uz.pdp.userservice.exception.DataNotFoundException;
 import uz.pdp.userservice.exception.DuplicateValueException;
@@ -104,6 +105,18 @@ public class UserServiceImpl implements UserService {
         user.setPassword(resetPasswordDTO.newPassword());
         userRepository.save(user);
         return "Success";
+    }
+
+    @Override
+    public String updatePassword(UUID userId, PasswordUpdateDTO passwordUpdateDTO) {
+        User user = getUserById(userId);
+        if (!Objects.equals(user.getPassword(), passwordUpdateDTO.oldPassword()))
+            throw new BadRequestException("Old password wrong! Password: " + passwordUpdateDTO.oldPassword());
+        if (!Objects.equals(passwordUpdateDTO.newPassword(), passwordUpdateDTO.repeatPassword()))
+            throw new BadRequestException("User new password and repeat password are must be same");
+        user.setPassword(passwordUpdateDTO.newPassword());
+        userRepository.save(user);
+        return "Password successfully updated";
     }
 
     private String generateVerificationCode() {
