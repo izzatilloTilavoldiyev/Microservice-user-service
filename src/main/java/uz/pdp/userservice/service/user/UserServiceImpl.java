@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import uz.pdp.userservice.domain.dto.LoginDTO;
+import uz.pdp.userservice.domain.dto.ResetPasswordDTO;
 import uz.pdp.userservice.exception.DataNotFoundException;
 import uz.pdp.userservice.exception.DuplicateValueException;
 import uz.pdp.userservice.domain.dto.UserRequestDTO;
@@ -79,6 +80,30 @@ public class UserServiceImpl implements UserService {
                 .email(loginDTO.email())
                 .password(loginDTO.password())
                 .build();
+    }
+
+    @Override
+    public String forgotPassword(String email) {
+        User user = userRepository.findUserByEmail(email).orElseThrow(
+                () -> new DataNotFoundException("User not found with '" + email + "' email")
+        );
+        user.setVerificationCode(generateVerificationCode());
+        user.setVerificationDate(LocalDateTime.now());
+        userRepository.save(user);
+        return mailService.sendVerificationCode(user.getEmail(), user.getVerificationCode());
+    }
+
+    @Override
+    public String resetPassword(UUID userId, ResetPasswordDTO resetPasswordDTO) {
+        User user = getUserById(userId);
+        if (!user.getVerificationDate().plusMinutes(5).isAfter(LocalDateTime.now())
+                || !Objects.equals(user.getVerificationCode(), resetPasswordDTO.verificationCode()))
+            return "Verification code wrong";
+        if (!Objects.equals(resetPasswordDTO.newPassword(), resetPasswordDTO.repeatPassword()))
+            throw new BadRequestException("New password and repeat password are not same");
+        user.setPassword(resetPasswordDTO.newPassword());
+        userRepository.save(user);
+        return "Success";
     }
 
     private String generateVerificationCode() {

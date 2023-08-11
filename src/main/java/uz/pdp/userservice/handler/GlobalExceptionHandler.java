@@ -1,5 +1,6 @@
 package uz.pdp.userservice.handler;
 
+import jakarta.ws.rs.BadRequestException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -26,6 +27,12 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler({UserPasswordWrongException.class})
     public ResponseEntity<ErrorMessage> userPasswordWrongExceptionHandler(RuntimeException e) {
+        ErrorMessage message = new ErrorMessage(HttpStatus.BAD_REQUEST, e.getMessage());
+        return ResponseEntity.status(400).body(message);
+    }
+
+    @ExceptionHandler({BadRequestException.class})
+    public ResponseEntity<ErrorMessage> badRequestExceptionHandler(RuntimeException e) {
         ErrorMessage message = new ErrorMessage(HttpStatus.BAD_REQUEST, e.getMessage());
         return ResponseEntity.status(400).body(message);
     }

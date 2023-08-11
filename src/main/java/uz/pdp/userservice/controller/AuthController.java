@@ -6,6 +6,7 @@ import lombok.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import uz.pdp.userservice.domain.dto.LoginDTO;
+import uz.pdp.userservice.domain.dto.ResetPasswordDTO;
 import uz.pdp.userservice.domain.dto.UserRequestDTO;
 import uz.pdp.userservice.service.user.UserService;
 
@@ -44,6 +45,23 @@ public class AuthController {
     ) {
         LoginDTO login = userService.login(loginDTO);
         return ResponseEntity.ok(login);
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<String> forgotPassword(
+            @RequestParam String email
+    ) {
+        String response = userService.forgotPassword(email);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/reset-password/{userId}")
+    public ResponseEntity<String> resetPassword(
+            @PathVariable UUID userId,
+            @Valid @RequestBody ResetPasswordDTO resetPasswordDTO
+    ) {
+        String response = userService.resetPassword(userId, resetPasswordDTO);
+        return ResponseEntity.ok(response);
     }
 
 }
