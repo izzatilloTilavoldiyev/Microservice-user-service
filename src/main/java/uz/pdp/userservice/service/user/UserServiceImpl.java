@@ -1,8 +1,10 @@
 package uz.pdp.userservice.service.user;
 
+import jakarta.ws.rs.BadRequestException;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
+import uz.pdp.userservice.domain.dto.LoginDTO;
 import uz.pdp.userservice.exception.DataNotFoundException;
 import uz.pdp.userservice.exception.DuplicateValueException;
 import uz.pdp.userservice.domain.dto.UserRequestDTO;
@@ -10,16 +12,14 @@ import uz.pdp.userservice.domain.entity.user.Permission;
 import uz.pdp.userservice.domain.entity.user.Role;
 import uz.pdp.userservice.domain.entity.user.User;
 import uz.pdp.userservice.domain.entity.user.UserState;
+import uz.pdp.userservice.exception.UserPasswordWrongException;
 import uz.pdp.userservice.repository.PermissionRepository;
 import uz.pdp.userservice.repository.RoleRepository;
 import uz.pdp.userservice.repository.UserRepository;
 import uz.pdp.userservice.service.MailService;
 
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Objects;
-import java.util.Random;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -66,6 +66,19 @@ public class UserServiceImpl implements UserService {
         user.setVerificationDate(LocalDateTime.now());
         userRepository.save(user);
         return mailService.sendVerificationCode(user.getEmail(), user.getVerificationCode());
+    }
+
+    @Override
+    public LoginDTO login(LoginDTO loginDTO) {
+        User user = userRepository.findUserByEmail(loginDTO.email()).orElseThrow(
+                () -> new DataNotFoundException("User not found with '" + loginDTO.email() + "' email")
+        );
+        if (!Objects.equals(user.getPassword(), loginDTO.password()))
+            throw new UserPasswordWrongException("User password wrong Password: " + loginDTO.password());
+        return LoginDTO.builder()
+                .email(loginDTO.email())
+                .password(loginDTO.password())
+                .build();
     }
 
     private String generateVerificationCode() {

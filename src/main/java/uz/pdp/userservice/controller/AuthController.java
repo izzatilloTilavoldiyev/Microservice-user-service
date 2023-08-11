@@ -1,7 +1,11 @@
 package uz.pdp.userservice.controller;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.Value;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import uz.pdp.userservice.domain.dto.LoginDTO;
 import uz.pdp.userservice.domain.dto.UserRequestDTO;
 import uz.pdp.userservice.service.user.UserService;
 
@@ -32,6 +36,14 @@ public class AuthController {
             @PathVariable UUID userId
     ) {
         return userService.newVerifyCode(userId);
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<LoginDTO> login(
+            @Valid @RequestBody LoginDTO loginDTO
+    ) {
+        LoginDTO login = userService.login(loginDTO);
+        return ResponseEntity.ok(login);
     }
 
 }

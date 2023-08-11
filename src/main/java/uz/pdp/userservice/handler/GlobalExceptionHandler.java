@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import uz.pdp.userservice.domain.dto.ErrorMessage;
 import uz.pdp.userservice.exception.DataNotFoundException;
 import uz.pdp.userservice.exception.DuplicateValueException;
+import uz.pdp.userservice.exception.UserPasswordWrongException;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
@@ -21,5 +22,11 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorMessage> duplicateValueExceptionHandler(RuntimeException e) {
         ErrorMessage message = new ErrorMessage(HttpStatus.CONFLICT, e.getMessage());
         return ResponseEntity.status(409).body(message);
+    }
+
+    @ExceptionHandler({UserPasswordWrongException.class})
+    public ResponseEntity<ErrorMessage> userPasswordWrongExceptionHandler(RuntimeException e) {
+        ErrorMessage message = new ErrorMessage(HttpStatus.BAD_REQUEST, e.getMessage());
+        return ResponseEntity.status(400).body(message);
     }
 }
