@@ -27,4 +27,11 @@ public class AuthController {
         return userService.verify(userId, verificationCode);
     }
 
+    @GetMapping("/new-veify-code/{userId}")
+    public String newVerifyCode(
+            @PathVariable UUID userId
+    ) {
+        return userService.newVerifyCode(userId);
+    }
+
 }

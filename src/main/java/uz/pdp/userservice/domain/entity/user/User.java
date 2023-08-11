@@ -1,11 +1,11 @@
 package uz.pdp.userservice.domain.entity.user;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.ManyToMany;
+import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
 import uz.pdp.userservice.domain.entity.BaseEntity;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity(name = "users")
@@ -30,7 +30,11 @@ public class User extends BaseEntity {
     @ManyToMany
     private List<Permission> permissions;
 
-    private UserState state ;
+    @Enumerated(EnumType.STRING)
+    private UserState state;
 
     private String verificationCode;
+
+    @CreationTimestamp
+    private LocalDateTime verificationDate;
 }

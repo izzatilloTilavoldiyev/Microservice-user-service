@@ -15,6 +15,7 @@ import uz.pdp.userservice.repository.RoleRepository;
 import uz.pdp.userservice.repository.UserRepository;
 import uz.pdp.userservice.service.MailService;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.Random;
@@ -38,6 +39,7 @@ public class UserServiceImpl implements UserService {
 
         User user = modelMapper.map(dto, User.class);
         user.setVerificationCode(generateVerificationCode());
+        user.setVerificationDate(LocalDateTime.now());
         user.setState(UserState.UNVERIFIED);
         user.setRoles(getRolesFromStrings(dto.getRoles()));
         user.setPermissions(getPermissionsFromStrings(dto.getPermissions()));
@@ -48,14 +50,27 @@ public class UserServiceImpl implements UserService {
     @Override
     public String verify(UUID userId, String verificationCode) {
         User user = getUserById(userId);
-        if (!Objects.equals(user.getVerificationCode(), verificationCode))
+        if (!user.getVerificationDate().plusSeconds(30).isAfter(LocalDateTime.now())
+                || !Objects.equals(user.getVerificationCode(), verificationCode))
             return "Verification code wrong";
+        System.out.println(user.getCreatedDate().plusSeconds(30).isAfter(LocalDateTime.now()));
+        user.setState(UserState.ACTIVE);
+        userRepository.save(user);
         return "Successfully verified";
     }
 
+    @Override
+    public String newVerifyCode(UUID userId) {
+        User user = getUserById(userId);
+        user.setVerificationCode(generateVerificationCode());
+        user.setVerificationDate(LocalDateTime.now());
+        userRepository.save(user);
+        return mailService.sendVerificationCode(user.getEmail(), user.getVerificationCode());
+    }
+
     private String generateVerificationCode() {
-        Random random = new Random(100000);
-        return String.valueOf(random.nextInt(1000000));
+        Random random = new Random();
+        return String.valueOf(random.nextInt(100000, 1000000));
     }
 
     private void checkUserEmail(String email) {

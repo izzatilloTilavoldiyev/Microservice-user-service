@@ -9,4 +9,6 @@ public interface UserService {
     String save(UserRequestDTO dto);
 
     String verify(UUID userId, String verificationCode);
+
+    String newVerifyCode(UUID userId);
 }
