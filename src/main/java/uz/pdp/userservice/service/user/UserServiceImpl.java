@@ -3,6 +3,7 @@ package uz.pdp.userservice.service.user;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
+import uz.pdp.userservice.exception.DataNotFoundException;
 import uz.pdp.userservice.exception.DuplicateValueException;
 import uz.pdp.userservice.domain.dto.UserRequestDTO;
 import uz.pdp.userservice.domain.entity.user.Permission;
@@ -15,7 +16,9 @@ import uz.pdp.userservice.repository.UserRepository;
 import uz.pdp.userservice.service.MailService;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Random;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -42,6 +45,14 @@ public class UserServiceImpl implements UserService {
         return mailService.sendVerificationCode(user.getEmail(), user.getVerificationCode());
     }
 
+    @Override
+    public String verify(UUID userId, String verificationCode) {
+        User user = getUserById(userId);
+        if (!Objects.equals(user.getVerificationCode(), verificationCode))
+            return "Verification code wrong";
+        return "Successfully verified";
+    }
+
     private String generateVerificationCode() {
         Random random = new Random(100000);
         return String.valueOf(random.nextInt(1000000));
@@ -58,5 +69,11 @@ public class UserServiceImpl implements UserService {
 
     private List<Role> getRolesFromStrings(List<String> roles) {
         return roleRepository.findRoleByNameIn(roles);
+    }
+
+    private User getUserById(UUID userId) {
+        return userRepository.findById(userId).orElseThrow(
+                () -> new DataNotFoundException("User not found with '" + userId + "' id")
+        );
     }
 }
