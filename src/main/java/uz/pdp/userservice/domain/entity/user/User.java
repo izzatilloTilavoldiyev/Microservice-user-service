@@ -27,9 +27,6 @@ public class User extends BaseEntity {
     @ManyToMany
     private List<Role> roles;
 
-    @ManyToMany
-    private List<Permission> permissions;
-
     @Enumerated(EnumType.STRING)
     private UserState state;
 

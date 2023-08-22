@@ -4,6 +4,7 @@ import uz.pdp.userservice.domain.dto.LoginDTO;
 import uz.pdp.userservice.domain.dto.PasswordUpdateDTO;
 import uz.pdp.userservice.domain.dto.ResetPasswordDTO;
 import uz.pdp.userservice.domain.dto.UserRequestDTO;
+import uz.pdp.userservice.domain.entity.user.User;
 
 import java.util.UUID;
 
@@ -13,13 +14,8 @@ public interface UserService {
 
     String verify(UUID userId, String verificationCode);
 
-    String newVerifyCode(UUID userId);
+    User getById(UUID userId);
 
-    LoginDTO login(LoginDTO loginDTO);
+    String generateVerificationCodee();
 
-    String forgotPassword(String email);
-
-    String resetPassword(UUID userId, ResetPasswordDTO resetPasswordDTO);
-
-    String updatePassword(UUID userId, PasswordUpdateDTO passwordUpdateDTO);
 }

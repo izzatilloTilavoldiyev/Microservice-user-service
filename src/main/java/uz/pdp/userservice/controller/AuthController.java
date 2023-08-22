@@ -2,13 +2,13 @@ package uz.pdp.userservice.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import lombok.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import uz.pdp.userservice.domain.dto.LoginDTO;
 import uz.pdp.userservice.domain.dto.PasswordUpdateDTO;
 import uz.pdp.userservice.domain.dto.ResetPasswordDTO;
 import uz.pdp.userservice.domain.dto.UserRequestDTO;
+import uz.pdp.userservice.service.auth.AuthService;
 import uz.pdp.userservice.service.user.UserService;
 
 import java.util.UUID;
@@ -19,6 +19,7 @@ import java.util.UUID;
 public class AuthController {
 
     private final UserService userService;
+    private final AuthService authService;
 
     @PostMapping("/sign-up")
     public String signUp(@RequestBody UserRequestDTO userRequestDTO) {
@@ -37,14 +38,14 @@ public class AuthController {
     public String newVerifyCode(
             @PathVariable UUID userId
     ) {
-        return userService.newVerifyCode(userId);
+        return authService.newVerifyCode(userId);
     }
 
     @PostMapping("/login")
     public ResponseEntity<LoginDTO> login(
             @Valid @RequestBody LoginDTO loginDTO
     ) {
-        LoginDTO login = userService.login(loginDTO);
+        LoginDTO login = authService.login(loginDTO);
         return ResponseEntity.ok(login);
     }
 
@@ -52,7 +53,7 @@ public class AuthController {
     public ResponseEntity<String> forgotPassword(
             @RequestParam String email
     ) {
-        String response = userService.forgotPassword(email);
+        String response = authService.forgotPassword(email);
         return ResponseEntity.ok(response);
     }
 
@@ -61,7 +62,7 @@ public class AuthController {
             @PathVariable UUID userId,
             @Valid @RequestBody ResetPasswordDTO resetPasswordDTO
     ) {
-        String response = userService.resetPassword(userId, resetPasswordDTO);
+        String response = authService.resetPassword(userId, resetPasswordDTO);
         return ResponseEntity.ok(response);
     }
 
@@ -70,7 +71,7 @@ public class AuthController {
             @PathVariable UUID userId,
             PasswordUpdateDTO passwordUpdateDTO
     ) {
-        String response = userService.updatePassword(userId, passwordUpdateDTO);
+        String response = authService.updatePassword(userId, passwordUpdateDTO);
         return ResponseEntity.ok(response);
     }
 
