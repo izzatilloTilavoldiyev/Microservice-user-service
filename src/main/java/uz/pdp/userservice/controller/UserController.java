@@ -12,7 +12,7 @@ import uz.pdp.userservice.service.user.UserService;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/user")
+@RequestMapping("/api/v1/user")
 @RequiredArgsConstructor
 public class UserController {
 
@@ -30,4 +30,5 @@ public class UserController {
         User user = userService.getById(userId);
         return ResponseEntity.ok(user);
     }
+
 }

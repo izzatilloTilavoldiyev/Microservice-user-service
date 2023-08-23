@@ -1,5 +1,6 @@
 package uz.pdp.userservice.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -14,18 +15,26 @@ import uz.pdp.userservice.service.user.UserService;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/user/auth")
+@RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
 public class AuthController {
 
     private final UserService userService;
     private final AuthService authService;
 
+    @Operation(
+            description = "POST endpoint to user sign up",
+            summary = "API to sign up"
+    )
     @PostMapping("/sign-up")
     public String signUp(@RequestBody UserRequestDTO userRequestDTO) {
         return userService.save(userRequestDTO);
     }
 
+    @Operation(
+            description = "POST endpoint to user verify after signed up",
+            summary = "API to user verify"
+    )
     @PostMapping("/verify/{userId}")
     public String verify(
             @PathVariable UUID userId,
@@ -34,6 +43,10 @@ public class AuthController {
         return userService.verify(userId, verificationCode);
     }
 
+    @Operation(
+            description = "POST endpoint to user regenerate verification code",
+            summary = "API to regenerate verify code"
+    )
     @GetMapping("/new-veify-code/{userId}")
     public String newVerifyCode(
             @PathVariable UUID userId
@@ -41,6 +54,10 @@ public class AuthController {
         return authService.newVerifyCode(userId);
     }
 
+    @Operation(
+            description = "POST endpoint to user login after verified",
+            summary = "API to login"
+    )
     @PostMapping("/login")
     public ResponseEntity<LoginDTO> login(
             @Valid @RequestBody LoginDTO loginDTO
@@ -49,6 +66,10 @@ public class AuthController {
         return ResponseEntity.ok(login);
     }
 
+    @Operation(
+            description = "POST endpoint to user forgot password",
+            summary = "API to forgot password"
+    )
     @PostMapping("/forgot-password")
     public ResponseEntity<String> forgotPassword(
             @RequestParam String email
@@ -57,6 +78,10 @@ public class AuthController {
         return ResponseEntity.ok(response);
     }
 
+    @Operation(
+            description = "PUT endpoint to user reset password",
+            summary = "API to reset password"
+    )
     @PutMapping("/reset-password/{userId}")
     public ResponseEntity<String> resetPassword(
             @PathVariable UUID userId,
@@ -66,6 +91,10 @@ public class AuthController {
         return ResponseEntity.ok(response);
     }
 
+    @Operation(
+            description = "PUT endpoint to user update password",
+            summary = "API to update password"
+    )
     @PutMapping("/update-password/{userId}")
     public ResponseEntity<String> updatePassword(
             @PathVariable UUID userId,
