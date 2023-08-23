@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import uz.pdp.userservice.domain.entity.user.Role;
 
 import java.util.List;
 
@@ -20,6 +21,4 @@ public class UserRequestDTO {
 
     @NotBlank(message = "password must not be blank")
     private String password;
-
-    private List<String> roles;
 }

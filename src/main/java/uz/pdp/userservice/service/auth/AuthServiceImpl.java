@@ -28,7 +28,7 @@ public class AuthServiceImpl implements AuthService{
     @Override
     public String newVerifyCode(UUID userId) {
         User user = userService.getById(userId);
-        user.setVerificationCode(userService.generateVerificationCodee());
+        user.setVerificationCode(userService.genVerificationCodee());
         user.setVerificationDate(LocalDateTime.now());
         userRepository.save(user);
         return mailService.sendVerificationCode(user.getEmail(), user.getVerificationCode());
@@ -52,7 +52,7 @@ public class AuthServiceImpl implements AuthService{
         User user = userRepository.findUserByEmail(email).orElseThrow(
                 () -> new DataNotFoundException("User not found with '" + email + "' email")
         );
-        user.setVerificationCode(userService.generateVerificationCodee());
+        user.setVerificationCode(userService.genVerificationCodee());
         user.setVerificationDate(LocalDateTime.now());
         userRepository.save(user);
         return mailService.sendVerificationCode(user.getEmail(), user.getVerificationCode());

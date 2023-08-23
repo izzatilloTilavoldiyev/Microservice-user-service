@@ -1,8 +1,5 @@
 package uz.pdp.userservice.service.user;
 
-import uz.pdp.userservice.domain.dto.LoginDTO;
-import uz.pdp.userservice.domain.dto.PasswordUpdateDTO;
-import uz.pdp.userservice.domain.dto.ResetPasswordDTO;
 import uz.pdp.userservice.domain.dto.UserRequestDTO;
 import uz.pdp.userservice.domain.entity.user.User;
 
@@ -16,6 +13,6 @@ public interface UserService {
 
     User getById(UUID userId);
 
-    String generateVerificationCodee();
+    String genVerificationCodee();
 
 }
