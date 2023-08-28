@@ -14,7 +14,4 @@ public interface UserService {
     User getById(UUID userId);
 
     String genVerificationCodee();
-
-    boolean doesUserExists(UUID userID);
-
 }

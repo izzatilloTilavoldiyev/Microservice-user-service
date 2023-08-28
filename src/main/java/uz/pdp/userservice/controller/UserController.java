@@ -33,12 +33,4 @@ public class UserController {
         return ResponseEntity.ok(user);
     }
 
-    @GetMapping("/user-exists")
-    public ResponseEntity<Boolean> doesUserExists(
-            @RequestParam UUID userID
-    ) {
-        boolean response = userService.doesUserExists(userID);
-        return ResponseEntity.ok(response);
-    }
-
 }

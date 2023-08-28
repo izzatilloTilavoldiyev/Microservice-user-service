@@ -58,11 +58,6 @@ public class UserServiceImpl implements UserService {
         return generateVerificationCode();
     }
 
-    @Override
-    public boolean doesUserExists(UUID userID) {
-        return userRepository.existsUserById(userID);
-    }
-
     private String generateVerificationCode() {
         Random random = new Random();
         return String.valueOf(random.nextInt(100000, 1000000));
@@ -74,7 +69,7 @@ public class UserServiceImpl implements UserService {
     }
 
     private User getUserById(UUID userId) {
-        return userRepository.findById(userId).orElseThrow(
+        return userRepository.findUserById(userId).orElseThrow(
                 () -> new DataNotFoundException("User not found with '" + userId + "' id")
         );
     }
