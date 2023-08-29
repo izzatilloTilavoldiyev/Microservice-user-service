@@ -28,8 +28,8 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public ResponseDTO<UserResponseDTO> save(UserRequestDTO dto) {
-        checkUserEmail(dto.getEmail());
-
+        checkUserEmailExists(dto.getEmail());
+        checkEmailIsValid(dto.getEmail());
         User user = modelMapper.map(dto, User.class);
         user.setVerificationCode(generateVerificationCode());
         user.setVerificationDate(LocalDateTime.now());
@@ -38,11 +38,8 @@ public class UserServiceImpl implements UserService {
         User savedUser = userRepository.save(user);
         String responseMessage = mailService.sendVerificationCode(user.getEmail(), user.getVerificationCode());
 
-        if (Objects.equals(responseMessage, "Successfully sent")) {
-            UserResponseDTO mappedUser = modelMapper.map(savedUser, UserResponseDTO.class);
-            return new ResponseDTO<>(responseMessage, 200, mappedUser);
-        }
-        return new ResponseDTO<>("Not sent", 400);
+        UserResponseDTO mappedUser = modelMapper.map(savedUser, UserResponseDTO.class);
+        return new ResponseDTO<>(responseMessage, 200, mappedUser);
     }
 
     @Override
@@ -71,9 +68,16 @@ public class UserServiceImpl implements UserService {
         return String.valueOf(random.nextInt(100000, 1000000));
     }
 
-    private void checkUserEmail(String email) {
+    private void checkUserEmailExists(String email) {
         if (userRepository.existsUserByEmail(email))
-            throw new DuplicateValueException("email already exists");
+            throw new DuplicateValueException("Email already exists with Email: " + email);
+    }
+
+    private void checkEmailIsValid(String email) {
+        String emailPattern = "^[A-Za-z0-9+_.-]+@(.+)$";
+        if (!email.matches(emailPattern)) {
+            throw new IllegalArgumentException("Invalid email address");
+        }
     }
 
     private User getUserById(UUID userId) {

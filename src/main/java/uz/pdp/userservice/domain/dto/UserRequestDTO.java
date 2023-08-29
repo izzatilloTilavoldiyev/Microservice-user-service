@@ -17,7 +17,7 @@ public class UserRequestDTO {
     private String name;
 
     @NotBlank(message = "email must not be blank")
-    @Size(min = 15, message = "Email length must be at least 15 characters")
+    @Size(min = 12, message = "Email length must be at least 12 characters")
     private String email;
 
     @NotBlank(message = "password must not be blank")
