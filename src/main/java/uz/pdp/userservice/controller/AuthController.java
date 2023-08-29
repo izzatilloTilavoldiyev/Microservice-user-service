@@ -3,12 +3,15 @@ package uz.pdp.userservice.controller;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import uz.pdp.userservice.domain.dto.LoginDTO;
 import uz.pdp.userservice.domain.dto.PasswordUpdateDTO;
 import uz.pdp.userservice.domain.dto.ResetPasswordDTO;
 import uz.pdp.userservice.domain.dto.UserRequestDTO;
+import uz.pdp.userservice.domain.dto.response.ResponseDTO;
+import uz.pdp.userservice.domain.dto.response.UserResponseDTO;
 import uz.pdp.userservice.service.auth.AuthService;
 import uz.pdp.userservice.service.user.UserService;
 
@@ -20,6 +23,7 @@ import java.util.UUID;
 public class AuthController {
 
     private final UserService userService;
+
     private final AuthService authService;
 
     @Operation(
@@ -27,8 +31,11 @@ public class AuthController {
             summary = "API to sign up"
     )
     @PostMapping("/sign-up")
-    public String signUp(@RequestBody UserRequestDTO userRequestDTO) {
-        return userService.save(userRequestDTO);
+    public ResponseEntity<ResponseDTO<UserResponseDTO>> signUp(
+            @Valid @RequestBody UserRequestDTO userRequestDTO
+    ) {
+        ResponseDTO<UserResponseDTO> response = userService.save(userRequestDTO);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @Operation(

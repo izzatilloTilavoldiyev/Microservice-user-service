@@ -3,6 +3,8 @@ package uz.pdp.userservice.service.user;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
+import uz.pdp.userservice.domain.dto.response.ResponseDTO;
+import uz.pdp.userservice.domain.dto.response.UserResponseDTO;
 import uz.pdp.userservice.domain.entity.user.Role;
 import uz.pdp.userservice.exception.DataNotFoundException;
 import uz.pdp.userservice.exception.DuplicateValueException;
@@ -25,7 +27,7 @@ public class UserServiceImpl implements UserService {
 
 
     @Override
-    public String save(UserRequestDTO dto) {
+    public ResponseDTO<UserResponseDTO> save(UserRequestDTO dto) {
         checkUserEmail(dto.getEmail());
 
         User user = modelMapper.map(dto, User.class);
@@ -33,8 +35,14 @@ public class UserServiceImpl implements UserService {
         user.setVerificationDate(LocalDateTime.now());
         user.setState(UserState.UNVERIFIED);
         user.setRole(Role.USER);
-        userRepository.save(user);
-        return mailService.sendVerificationCode(user.getEmail(), user.getVerificationCode());
+        User savedUser = userRepository.save(user);
+        String responseMessage = mailService.sendVerificationCode(user.getEmail(), user.getVerificationCode());
+
+        if (Objects.equals(responseMessage, "Successfully sent")) {
+            UserResponseDTO mappedUser = modelMapper.map(savedUser, UserResponseDTO.class);
+            return new ResponseDTO<>(responseMessage, 200, mappedUser);
+        }
+        return new ResponseDTO<>("Not sent", 400);
     }
 
     @Override
