@@ -5,7 +5,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-import uz.pdp.userservice.domain.dto.MailDTO;
+import uz.pdp.userservice.domain.dto.response.MailDTO;
 
 import java.net.URI;
 

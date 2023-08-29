@@ -1,4 +1,4 @@
-package uz.pdp.userservice.domain.dto;
+package uz.pdp.userservice.domain.dto.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

@@ -9,11 +9,10 @@ import org.springframework.web.bind.annotation.*;
 import uz.pdp.userservice.domain.dto.LoginDTO;
 import uz.pdp.userservice.domain.dto.PasswordUpdateDTO;
 import uz.pdp.userservice.domain.dto.ResetPasswordDTO;
-import uz.pdp.userservice.domain.dto.UserRequestDTO;
+import uz.pdp.userservice.domain.dto.request.UserRequestDTO;
 import uz.pdp.userservice.domain.dto.response.ResponseDTO;
 import uz.pdp.userservice.domain.dto.response.UserResponseDTO;
 import uz.pdp.userservice.service.auth.AuthService;
-import uz.pdp.userservice.service.user.UserService;
 
 import java.util.UUID;
 
@@ -21,8 +20,6 @@ import java.util.UUID;
 @RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
 public class AuthController {
-
-    private final UserService userService;
 
     private final AuthService authService;
 
@@ -34,7 +31,7 @@ public class AuthController {
     public ResponseEntity<ResponseDTO<UserResponseDTO>> signUp(
             @Valid @RequestBody UserRequestDTO userRequestDTO
     ) {
-        ResponseDTO<UserResponseDTO> response = userService.save(userRequestDTO);
+        ResponseDTO<UserResponseDTO> response = authService.save(userRequestDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
@@ -42,12 +39,12 @@ public class AuthController {
             description = "POST endpoint to user verify after signed up",
             summary = "API to user verify"
     )
-    @PostMapping("/verify/{userId}")
+    @PostMapping("/verify")
     public String verify(
-            @PathVariable UUID userId,
+            @RequestParam String email,
             @RequestParam String verificationCode
     ) {
-        return userService.verify(userId, verificationCode);
+        return authService.verify(email, verificationCode);
     }
 
     @Operation(

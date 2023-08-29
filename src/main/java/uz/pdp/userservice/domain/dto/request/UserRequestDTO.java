@@ -1,4 +1,4 @@
-package uz.pdp.userservice.domain.dto;
+package uz.pdp.userservice.domain.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;

@@ -2,12 +2,18 @@ package uz.pdp.userservice.service.auth;
 
 import jakarta.ws.rs.BadRequestException;
 import lombok.RequiredArgsConstructor;
+import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import uz.pdp.userservice.domain.dto.LoginDTO;
 import uz.pdp.userservice.domain.dto.PasswordUpdateDTO;
 import uz.pdp.userservice.domain.dto.ResetPasswordDTO;
+import uz.pdp.userservice.domain.dto.request.UserRequestDTO;
+import uz.pdp.userservice.domain.dto.response.ResponseDTO;
+import uz.pdp.userservice.domain.dto.response.UserResponseDTO;
+import uz.pdp.userservice.domain.entity.user.Role;
 import uz.pdp.userservice.domain.entity.user.User;
-import uz.pdp.userservice.exception.DataNotFoundException;
+import uz.pdp.userservice.domain.entity.user.UserState;
+import uz.pdp.userservice.exception.DuplicateValueException;
 import uz.pdp.userservice.exception.UserPasswordWrongException;
 import uz.pdp.userservice.repository.UserRepository;
 import uz.pdp.userservice.service.MailService;
@@ -15,6 +21,7 @@ import uz.pdp.userservice.service.user.UserService;
 
 import java.time.LocalDateTime;
 import java.util.Objects;
+import java.util.Random;
 import java.util.UUID;
 
 @Service
@@ -24,11 +31,39 @@ public class AuthServiceImpl implements AuthService{
     private final UserRepository userRepository;
     private final UserService userService;
     private final MailService mailService;
+    private final ModelMapper modelMapper;
+
+    @Override
+    public ResponseDTO<UserResponseDTO> save(UserRequestDTO dto) {
+        checkUserEmailExists(dto.getEmail());
+        checkEmailIsValid(dto.getEmail());
+        User user = modelMapper.map(dto, User.class);
+        user.setVerificationCode(generateVerificationCode());
+        user.setVerificationDate(LocalDateTime.now());
+        user.setState(UserState.UNVERIFIED);
+        user.setRole(Role.USER);
+        User savedUser = userRepository.save(user);
+        String responseMessage = mailService.sendVerificationCode(user.getEmail(), user.getVerificationCode());
+
+        UserResponseDTO mappedUser = modelMapper.map(savedUser, UserResponseDTO.class);
+        return new ResponseDTO<>(responseMessage, 200, mappedUser);
+    }
+
+    @Override
+    public String verify(String email, String verificationCode) {
+        User user = userService.getUserByEmail(email);
+        if (!user.getVerificationDate().plusMinutes(5).isAfter(LocalDateTime.now())
+                || !Objects.equals(user.getVerificationCode(), verificationCode))
+            return "Verification code wrong";
+        user.setState(UserState.ACTIVE);
+        userRepository.save(user);
+        return "Successfully verified";
+    }
 
     @Override
     public String newVerifyCode(UUID userId) {
         User user = userService.getById(userId);
-        user.setVerificationCode(userService.genVerificationCodee());
+        user.setVerificationCode(generateVerificationCode());
         user.setVerificationDate(LocalDateTime.now());
         userRepository.save(user);
         return mailService.sendVerificationCode(user.getEmail(), user.getVerificationCode());
@@ -36,9 +71,7 @@ public class AuthServiceImpl implements AuthService{
 
     @Override
     public LoginDTO login(LoginDTO loginDTO) {
-        User user = userRepository.findUserByEmail(loginDTO.email()).orElseThrow(
-                () -> new DataNotFoundException("User not found with '" + loginDTO.email() + "' email")
-        );
+        User user = userService.getUserByEmail(loginDTO.email());
         if (!Objects.equals(user.getPassword(), loginDTO.password()))
             throw new UserPasswordWrongException("User password wrong Password: " + loginDTO.password());
         return LoginDTO.builder()
@@ -49,10 +82,8 @@ public class AuthServiceImpl implements AuthService{
 
     @Override
     public String forgotPassword(String email) {
-        User user = userRepository.findUserByEmail(email).orElseThrow(
-                () -> new DataNotFoundException("User not found with '" + email + "' email")
-        );
-        user.setVerificationCode(userService.genVerificationCodee());
+        User user = userService.getUserByEmail(email);
+        user.setVerificationCode(generateVerificationCode());
         user.setVerificationDate(LocalDateTime.now());
         userRepository.save(user);
         return mailService.sendVerificationCode(user.getEmail(), user.getVerificationCode());
@@ -81,5 +112,22 @@ public class AuthServiceImpl implements AuthService{
         user.setPassword(passwordUpdateDTO.newPassword());
         userRepository.save(user);
         return "Password successfully updated";
+    }
+
+    private String generateVerificationCode() {
+        Random random = new Random();
+        return String.valueOf(random.nextInt(100000, 1000000));
+    }
+
+    private void checkUserEmailExists(String email) {
+        if (userRepository.existsUserByEmail(email))
+            throw new DuplicateValueException("Email already exists with Email: " + email);
+    }
+
+    private void checkEmailIsValid(String email) {
+        String emailPattern = "^[A-Za-z0-9+_.-]+@(.+)$";
+        if (!email.matches(emailPattern)) {
+            throw new IllegalArgumentException("Invalid email address");
+        }
     }
 }
