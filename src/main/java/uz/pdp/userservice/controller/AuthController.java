@@ -51,7 +51,7 @@ public class AuthController {
             description = "POST endpoint to user regenerate verification code",
             summary = "API to regenerate verify code"
     )
-    @GetMapping("/new-veify-code/{userId}")
+    @GetMapping("/new-verify-code/{userId}")
     public String newVerifyCode(
             @PathVariable UUID userId
     ) {
