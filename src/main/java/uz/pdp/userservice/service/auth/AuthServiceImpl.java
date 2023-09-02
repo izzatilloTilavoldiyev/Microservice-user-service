@@ -44,7 +44,7 @@ public class AuthServiceImpl implements AuthService{
         user.setRole(Role.USER);
         user.setVerificationData(generateVerificationCode());
         User savedUser = userRepository.save(user);
-        String responseMessage = mailService.sendVerificationCode(user.getEmail(), user.getVerificationCode());
+        String responseMessage = mailService.sendVerificationCode(user.getEmail(), user.getVerificationData().getVerificationCode());
         UserResponseDTO mappedUser = modelMapper.map(savedUser, UserResponseDTO.class);
         return new ResponseDTO<>(responseMessage, 200, mappedUser);
     }
@@ -104,7 +104,7 @@ public class AuthServiceImpl implements AuthService{
         if (!Objects.equals(user.getPassword(), passwordUpdateDTO.oldPassword()))
             throw new BadRequestException("Old password wrong! Password: " + passwordUpdateDTO.oldPassword());
         if (!Objects.equals(passwordUpdateDTO.newPassword(), passwordUpdateDTO.repeatPassword()))
-            throw new BadRequestException("User new password and repeat password are must be same");
+            throw new BadRequestException("User new password and repeat password must be same");
         user.setPassword(passwordUpdateDTO.newPassword());
         userRepository.save(user);
         return "Password successfully updated";
@@ -118,7 +118,7 @@ public class AuthServiceImpl implements AuthService{
 
     private void checkUserEmailExists(String email) {
         if (userRepository.existsUserByEmail(email))
-            throw new DuplicateValueException("Email already exists with Email: " + email);
+            throw new DuplicateValueException("Email already exists! Email: " + email);
     }
 
     private void checkEmailIsValid(String email) {
