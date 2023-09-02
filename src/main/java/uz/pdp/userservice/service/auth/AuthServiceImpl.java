@@ -52,7 +52,7 @@ public class AuthServiceImpl implements AuthService{
     @Override
     public String verify(String email, String verificationCode) {
         User user = userService.getUserByEmail(email);
-        if (checkVerificationCodeExpiration(user.getVerificationData(), verificationCode))
+        if (checkVerificationCodeAndExpiration(user.getVerificationData(), verificationCode))
             return "Verification code wrong";
         user.setState(UserState.ACTIVE);
         userRepository.save(user);
@@ -87,13 +87,12 @@ public class AuthServiceImpl implements AuthService{
     }
 
     @Override
-    public String resetPassword(UUID userId, ResetPasswordDTO resetPasswordDTO) {
-        User user = userService.getById(userId);
-        if (!user.getVerificationDate().plusMinutes(5).isAfter(LocalDateTime.now())
-                || !Objects.equals(user.getVerificationCode(), resetPasswordDTO.verificationCode()))
+    public String resetPassword(String email, ResetPasswordDTO resetPasswordDTO) {
+        User user = userService.getUserByEmail(email);
+        if (checkVerificationCodeAndExpiration(user.getVerificationData(), resetPasswordDTO.verificationCode()))
             return "Verification code wrong";
         if (!Objects.equals(resetPasswordDTO.newPassword(), resetPasswordDTO.repeatPassword()))
-            throw new BadRequestException("New password and repeat password are not same");
+            throw new BadRequestException("New password and repeat password must be same");
         user.setPassword(resetPasswordDTO.newPassword());
         userRepository.save(user);
         return "Success";
@@ -129,7 +128,7 @@ public class AuthServiceImpl implements AuthService{
         }
     }
 
-    public boolean checkVerificationCodeExpiration(VerificationData verificationData, String verificationCode) {
+    public boolean checkVerificationCodeAndExpiration(VerificationData verificationData, String verificationCode) {
         return !verificationData.getVerificationDate().plusMinutes(5).isAfter(LocalDateTime.now())
                 || !Objects.equals(verificationData.getVerificationCode(), verificationCode);
 

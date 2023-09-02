@@ -20,7 +20,7 @@ public interface AuthService {
 
     String forgotPassword(String email);
 
-    String resetPassword(UUID userId, ResetPasswordDTO resetPasswordDTO);
+    String resetPassword(String email, ResetPasswordDTO resetPasswordDTO);
 
     String updatePassword(UUID userId, PasswordUpdateDTO passwordUpdateDTO);
 }

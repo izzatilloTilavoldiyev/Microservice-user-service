@@ -86,12 +86,12 @@ public class AuthController {
             description = "PUT endpoint to user reset password",
             summary = "API to reset password"
     )
-    @PutMapping("/reset-password/{userId}")
+    @PutMapping("/reset-password/{email}")
     public ResponseEntity<String> resetPassword(
-            @PathVariable UUID userId,
+            @PathVariable String email,
             @Valid @RequestBody ResetPasswordDTO resetPasswordDTO
     ) {
-        String response = authService.resetPassword(userId, resetPasswordDTO);
+        String response = authService.resetPassword(email, resetPasswordDTO);
         return ResponseEntity.ok(response);
     }
 
