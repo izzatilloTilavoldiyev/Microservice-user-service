@@ -3,10 +3,7 @@ package uz.pdp.userservice.domain.entity.user;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.CreationTimestamp;
 import uz.pdp.userservice.domain.entity.BaseEntity;
-
-import java.time.LocalDateTime;
 
 @Entity(name = "users")
 @Getter
@@ -32,10 +29,10 @@ public class User extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private UserState state;
 
-    private String verificationCode;
-
-    @CreationTimestamp
-    private LocalDateTime verificationDate;
+    @Embedded
+    private VerificationData verificationData;
 
     private boolean deleted;
+
 }
+
