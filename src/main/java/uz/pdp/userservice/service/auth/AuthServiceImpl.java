@@ -13,6 +13,7 @@ import uz.pdp.userservice.domain.dto.response.UserResponseDTO;
 import uz.pdp.userservice.domain.entity.user.Role;
 import uz.pdp.userservice.domain.entity.user.User;
 import uz.pdp.userservice.domain.entity.user.UserState;
+import uz.pdp.userservice.domain.entity.user.VerificationData;
 import uz.pdp.userservice.exception.DuplicateValueException;
 import uz.pdp.userservice.exception.UserPasswordWrongException;
 import uz.pdp.userservice.repository.UserRepository;
@@ -22,7 +23,8 @@ import uz.pdp.userservice.service.user.UserService;
 import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.Random;
-import java.util.UUID;
+import java.util.UUID;a
+
 
 @Service
 @RequiredArgsConstructor
@@ -38,13 +40,11 @@ public class AuthServiceImpl implements AuthService{
         checkUserEmailExists(dto.getEmail());
         checkEmailIsValid(dto.getEmail());
         User user = modelMapper.map(dto, User.class);
-        user.setVerificationCode(generateVerificationCode());
-        user.setVerificationDate(LocalDateTime.now());
         user.setState(UserState.UNVERIFIED);
         user.setRole(Role.USER);
+        user.setVerificationData(generateVerificationCode());
         User savedUser = userRepository.save(user);
         String responseMessage = mailService.sendVerificationCode(user.getEmail(), user.getVerificationCode());
-
         UserResponseDTO mappedUser = modelMapper.map(savedUser, UserResponseDTO.class);
         return new ResponseDTO<>(responseMessage, 200, mappedUser);
     }
@@ -52,8 +52,7 @@ public class AuthServiceImpl implements AuthService{
     @Override
     public String verify(String email, String verificationCode) {
         User user = userService.getUserByEmail(email);
-        if (!user.getVerificationDate().plusMinutes(5).isAfter(LocalDateTime.now())
-                || !Objects.equals(user.getVerificationCode(), verificationCode))
+        if (checkVerificationCodeExpiration(user.getVerificationData(), verificationCode))
             return "Verification code wrong";
         user.setState(UserState.ACTIVE);
         userRepository.save(user);
@@ -114,9 +113,10 @@ public class AuthServiceImpl implements AuthService{
         return "Password successfully updated";
     }
 
-    private String generateVerificationCode() {
+    private VerificationData generateVerificationCode() {
         Random random = new Random();
-        return String.valueOf(random.nextInt(100000, 1000000));
+        String verificationCode = String.valueOf(random.nextInt(100000, 1000000));
+        return new VerificationData(verificationCode, LocalDateTime.now());
     }
 
     private void checkUserEmailExists(String email) {
@@ -129,5 +129,11 @@ public class AuthServiceImpl implements AuthService{
         if (!email.matches(emailPattern)) {
             throw new IllegalArgumentException("Invalid email address");
         }
+    }
+
+    public boolean checkVerificationCodeExpiration(VerificationData verificationData, String verificationCode) {
+        return !verificationData.getVerificationDate().plusMinutes(5).isAfter(LocalDateTime.now())
+                || !Objects.equals(verificationData.getVerificationCode(), verificationCode);
+
     }
 }
