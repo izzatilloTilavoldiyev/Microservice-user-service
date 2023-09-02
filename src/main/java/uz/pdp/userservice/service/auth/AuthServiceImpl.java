@@ -23,7 +23,7 @@ import uz.pdp.userservice.service.user.UserService;
 import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.Random;
-import java.util.UUID;a
+import java.util.UUID;
 
 
 @Service
@@ -60,12 +60,11 @@ public class AuthServiceImpl implements AuthService{
     }
 
     @Override
-    public String newVerifyCode(UUID userId) {
-        User user = userService.getById(userId);
-        user.setVerificationCode(generateVerificationCode());
-        user.setVerificationDate(LocalDateTime.now());
+    public String newVerifyCode(String email) {
+        User user = userService.getUserByEmail(email);
+        user.setVerificationData(generateVerificationCode());
         userRepository.save(user);
-        return mailService.sendVerificationCode(user.getEmail(), user.getVerificationCode());
+        return mailService.sendVerificationCode(user.getEmail(), user.getVerificationData().getVerificationCode());
     }
 
     @Override
@@ -82,10 +81,9 @@ public class AuthServiceImpl implements AuthService{
     @Override
     public String forgotPassword(String email) {
         User user = userService.getUserByEmail(email);
-        user.setVerificationCode(generateVerificationCode());
-        user.setVerificationDate(LocalDateTime.now());
+        user.setVerificationData(generateVerificationCode());
         userRepository.save(user);
-        return mailService.sendVerificationCode(user.getEmail(), user.getVerificationCode());
+        return mailService.sendVerificationCode(user.getEmail(), user.getVerificationData().getVerificationCode());
     }
 
     @Override

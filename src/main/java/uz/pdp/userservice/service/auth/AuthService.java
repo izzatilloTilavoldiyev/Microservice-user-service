@@ -14,7 +14,7 @@ public interface AuthService {
 
     String verify(String email, String verificationCode);
 
-    String newVerifyCode(UUID userId);
+    String newVerifyCode(String email);
 
     LoginDTO login(LoginDTO loginDTO);
 
